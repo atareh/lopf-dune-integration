@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie-Grade Shooting Star Animation</title>
+    <style>
+        /* ====================
+           GLOBAL STYLES
+        ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            overflow: hidden;
+            background: #000000;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* ====================
+           CONTAINER
+        ==================== */
+        .star-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
+        }
+
+        /* ====================
+           MAIN SHOOTING STAR LINE
+        ==================== */
+        .shooting-star {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 2px;
+            width: 0;
+            background: linear-gradient(
+                to right,
+                transparent,
+                rgba(255, 255, 255, 0.3) 10%,
+                rgba(255, 255, 255, 1) 50%,
+                rgba(255, 255, 255, 1) 90%,
+                rgba(255, 255, 255, 0.8)
+            );
+            transform: translateY(-50%);
+            filter: blur(0.5px);
+            box-shadow: 
+                0 0 8px rgba(255, 255, 255, 0.8),
+                0 0 16px rgba(255, 255, 255, 0.4),
+                0 0 24px rgba(255, 255, 255, 0.2);
+            animation: shootingStar 1.5s ease-out forwards;
+            z-index: 3;
+        }
+
+        /* Main line animation - shoots from left to right */
+        @keyframes shootingStar {
+            0% {
+                width: 0;
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                width: 100vw;
+                opacity: 0.8;
+            }
+        }
+
+        /* ====================
+           SPLIT LINES (FORK EFFECT)
+        ==================== */
+        .split-line-up {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 1px;
+            width: 0;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0.8),
+                rgba(255, 255, 255, 0.4),
+                transparent
+            );
+            transform: translateY(-50%) rotate(-15deg);
+            transform-origin: left center;
+            filter: blur(0.3px);
+            box-shadow: 
+                0 0 4px rgba(255, 255, 255, 0.6),
+                0 0 8px rgba(255, 255, 255, 0.3);
+            animation: splitLineUp 1s ease-out 0.5s forwards;
+            z-index: 2;
+        }
+
+        .split-line-down {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 1px;
+            width: 0;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0.8),
+                rgba(255, 255, 255, 0.4),
+                transparent
+            );
+            transform: translateY(-50%) rotate(15deg);
+            transform-origin: left center;
+            filter: blur(0.3px);
+            box-shadow: 
+                0 0 4px rgba(255, 255, 255, 0.6),
+                0 0 8px rgba(255, 255, 255, 0.3);
+            animation: splitLineDown 1s ease-out 0.5s forwards;
+            z-index: 2;
+        }
+
+        /* Split line animations */
+        @keyframes splitLineUp {
+            0% {
+                width: 0;
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                width: 50vw;
+                opacity: 0;
+            }
+        }
+
+        @keyframes splitLineDown {
+            0% {
+                width: 0;
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                width: 50vw;
+                opacity: 0;
+            }
+        }
+
+        /* ====================
+           PARTICLES
+        ==================== */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            pointer-events: none;
+            filter: blur(0.2px);
+            box-shadow: 
+                0 0 4px rgba(255, 255, 255, 0.8),
+                0 0 8px rgba(255, 255, 255, 0.4);
+            z-index: 1;
+        }
+
+        /* Particle drift animation */
+        @keyframes particleDrift {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translate(var(--drift-x, 0px), var(--drift-y, 150px)) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        /* ====================
+           RESTART BUTTON (for demo)
+        ==================== */
+        .restart-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .restart-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* ====================
+           BACKGROUND STARS (subtle)
+        ==================== */
+        .bg-star {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main container for the shooting star effect -->
+    <div class="star-container" id="starContainer">
+        <!-- Main shooting star line -->
+        <div class="shooting-star" id="mainLine"></div>
+        
+        <!-- Split lines that fork from the main line -->
+        <div class="split-line-up" id="splitUp"></div>
+        <div class="split-line-down" id="splitDown"></div>
+    </div>
+
+    <!-- Restart button for demo purposes -->
+    <button class="restart-btn" onclick="restartAnimation()">Restart Animation</button>
+
+    <script>
+        // ====================
+        // GLOBAL VARIABLES
+        // ====================
+        let particleSystem = {
+            particles: [],
+            isEmitting: false,
+            emissionRate: 200, // particles per second
+            lastEmissionTime: 0
+        };
+
+        let animationState = {
+            startTime: 0,
+            isRunning: false,
+            animationId: null
+        };
+
+        // ====================
+        // INITIALIZATION
+        // ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            createBackgroundStars();
+            startShootingStarSequence();
+        });
+
+        // ====================
+        // BACKGROUND STARS
+        // ====================
+        function createBackgroundStars() {
+            const container = document.getElementById('starContainer');
+            const starCount = 50;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'bg-star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // ====================
+        // MAIN ANIMATION SEQUENCE
+        // ====================
+        function startShootingStarSequence() {
+            if (animationState.isRunning) return;
+            
+            animationState.isRunning = true;
+            animationState.startTime = Date.now();
+            
+            // Reset all elements
+            resetElements();
+            
+            // Start particle emission after 300ms delay
+            setTimeout(() => {
+                startParticleEmission();
+            }, 300);
+            
+            // Stop particle emission after line animation completes
+            setTimeout(() => {
+                stopParticleEmission();
+            }, 1500);
+            
+            // Start the main animation loop
+            animationState.animationId = requestAnimationFrame(updateAnimation);
+            
+            // Reset everything after 4 seconds for next cycle
+            setTimeout(() => {
+                endSequence();
+            }, 4000);
+        }
+
+        // ====================
+        // ELEMENT RESET
+        // ====================
+        function resetElements() {
+            const mainLine = document.getElementById('mainLine');
+            const splitUp = document.getElementById('splitUp');
+            const splitDown = document.getElementById('splitDown');
+            
+            // Remove existing elements and recreate to reset animations
+            const container = document.getElementById('starContainer');
+            
+            // Clear existing particles
+            clearAllParticles();
+            
+            // Restart CSS animations by removing and re-adding elements
+            mainLine.style.animation = 'none';
+            splitUp.style.animation = 'none';
+            splitDown.style.animation = 'none';
+            
+            // Trigger reflow
+            mainLine.offsetHeight;
+            splitUp.offsetHeight;
+            splitDown.offsetHeight;
+            
+            // Restart animations
+            mainLine.style.animation = 'shootingStar 1.5s ease-out forwards';
+            splitUp.style.animation = 'splitLineUp 1s ease-out 0.5s forwards';
+            splitDown.style.animation = 'splitLineDown 1s ease-out 0.5s forwards';
+        }
+
+        // ====================
+        // PARTICLE SYSTEM
+        // ====================
+        function startParticleEmission() {
+            particleSystem.isEmitting = true;
+            particleSystem.lastEmissionTime = Date.now();
+        }
+
+        function stopParticleEmission() {
+            particleSystem.isEmitting = false;
+        }
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Position along the shooting star line
+            // Line extends from 0 to current width over 1.5s
+            const elapsed = (Date.now() - animationState.startTime - 300) / 1000; // Account for 300ms delay
+            const progress = Math.min(elapsed / 1.2, 1); // Line animation progress
+            const lineWidth = progress * window.innerWidth;
+            
+            // Random position along the visible line
+            const x = Math.random() * lineWidth;
+            const y = window.innerHeight / 2;
+            
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            
+            // Random size (3-5px as specified)
+            const size = Math.random() * 2 + 3;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Random drift values
+            const driftX = (Math.random() - 0.5) * 100; // Horizontal drift
+            const driftY = Math.random() * 100 + 100;   // Downward drift
+            
+            particle.style.setProperty('--drift-x', driftX + 'px');
+            particle.style.setProperty('--drift-y', driftY + 'px');
+            
+            // Apply animation
+            particle.style.animation = 'particleDrift 2s ease-out forwards';
+            
+            // Add to container and track
+            document.getElementById('starContainer').appendChild(particle);
+            particleSystem.particles.push({
+                element: particle,
+                createdAt: Date.now()
+            });
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                removeParticle(particle);
+            }, 2000);
+        }
+
+        function removeParticle(particleElement) {
+            if (particleElement && particleElement.parentNode) {
+                particleElement.parentNode.removeChild(particleElement);
+            }
+            // Remove from tracking array
+            particleSystem.particles = particleSystem.particles.filter(
+                p => p.element !== particleElement
+            );
+        }
+
+        function clearAllParticles() {
+            particleSystem.particles.forEach(p => {
+                if (p.element && p.element.parentNode) {
+                    p.element.parentNode.removeChild(p.element);
+                }
+            });
+            particleSystem.particles = [];
+        }
+
+        // ====================
+        // ANIMATION LOOP
+        // ====================
+        function updateAnimation() {
+            const currentTime = Date.now();
+            
+            // Emit particles at the specified rate (200/sec)
+            if (particleSystem.isEmitting) {
+                const timeSinceLastEmission = currentTime - particleSystem.lastEmissionTime;
+                const shouldEmit = timeSinceLastEmission >= (1000 / particleSystem.emissionRate);
+                
+                if (shouldEmit) {
+                    createParticle();
+                    particleSystem.lastEmissionTime = currentTime;
+                }
+            }
+            
+            // Continue animation loop if still running
+            if (animationState.isRunning) {
+                animationState.animationId = requestAnimationFrame(updateAnimation);
+            }
+        }
+
+        // ====================
+        // SEQUENCE END
+        // ====================
+        function endSequence() {
+            animationState.isRunning = false;
+            
+            if (animationState.animationId) {
+                cancelAnimationFrame(animationState.animationId);
+            }
+            
+            // Auto-restart after 2 seconds for continuous effect
+            setTimeout(() => {
+                startShootingStarSequence();
+            }, 2000);
+        }
+
+        // ====================
+        // MANUAL RESTART
+        // ====================
+        function restartAnimation() {
+            // Stop current animation
+            animationState.isRunning = false;
+            particleSystem.isEmitting = false;
+            
+            if (animationState.animationId) {
+                cancelAnimationFrame(animationState.animationId);
+            }
+            
+            // Clear any existing timeouts and start fresh
+            setTimeout(() => {
+                startShootingStarSequence();
+            }, 100);
+        }
+
+        // ====================
+        // PERFORMANCE OPTIMIZATION
+        // ====================
+        // Clean up particles that have been around too long
+        setInterval(() => {
+            const now = Date.now();
+            particleSystem.particles = particleSystem.particles.filter(p => {
+                if (now - p.createdAt > 3000) { // 3 seconds cleanup
+                    if (p.element && p.element.parentNode) {
+                        p.element.parentNode.removeChild(p.element);
+                    }
+                    return false;
+                }
+                return true;
+            });
+        }, 1000);
+
+        // ====================
+        // RESPONSIVE HANDLING
+        // ====================
+        window.addEventListener('resize', () => {
+            // Restart animation on resize to maintain proportions
+            restartAnimation();
+        });
+    </script>
+</body>
+</html> 

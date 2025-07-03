@@ -1,0 +1,6 @@
+node_modules/
+.env
+dune_data.db
+.vercel
+*.log
+.DS_Store
