@@ -85,40 +85,23 @@ function verifyWebhookSignature(payload, signature) {
     );
 }
 
-// Dune webhook endpoint - supports both query parameter and header authentication
+// Dune webhook endpoint
 app.post('/webhook/dune', (req, res) => {
     try {
-        // Check for query parameter authentication (like your example)
-        const querySecret = req.query.dune_secret;
-        
-        // Check for header authentication
         const signature = req.headers['x-dune-signature'];
         const payload = JSON.stringify(req.body);
         
-        // Verify authentication - either query parameter or signature
-        let isAuthenticated = false;
-        
-        if (querySecret) {
-            // Query parameter authentication
-            isAuthenticated = querySecret === WEBHOOK_SECRET;
-            console.log('Using query parameter authentication');
-        } else if (signature) {
-            // Header signature authentication
-            isAuthenticated = verifyWebhookSignature(payload, signature);
-            console.log('Using header signature authentication');
-        }
-        
-        if (WEBHOOK_SECRET !== 'your-secret-key' && !isAuthenticated) {
-            console.log('Invalid webhook authentication');
-            return res.status(401).json({ error: 'Invalid authentication' });
+        // Verify webhook signature if secret is provided
+        if (WEBHOOK_SECRET !== 'your-secret-key' && !verifyWebhookSignature(payload, signature)) {
+            console.log('Invalid webhook signature');
+            return res.status(401).json({ error: 'Invalid signature' });
         }
 
         const data = req.body;
         console.log('Received Dune webhook:', {
             query_id: data.query_id,
             execution_id: data.execution_id,
-            timestamp: new Date().toISOString(),
-            auth_method: querySecret ? 'query_param' : 'header'
+            timestamp: new Date().toISOString()
         });
 
         // Store the webhook data in database
@@ -133,10 +116,8 @@ app.post('/webhook/dune', (req, res) => {
             JSON.stringify(data.result || data),
             JSON.stringify({
                 headers: req.headers,
-                query_params: req.query,
                 received_at: new Date().toISOString(),
-                query_metadata: data.query_metadata || null,
-                auth_method: querySecret ? 'query_param' : 'header'
+                query_metadata: data.query_metadata || null
             })
         );
 
@@ -252,7 +233,7 @@ app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy', 
         timestamp: new Date().toISOString(),
-        database: 'sqlite'
+        database: 'connected'
     });
 });
 
@@ -266,7 +247,6 @@ app.post('/webhook/test', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Webhook URL: http://localhost:${PORT}/webhook/dune`);
-    console.log(`Query param URL: http://localhost:${PORT}/webhook/dune?dune_secret=YOUR_SECRET`);
     console.log(`Health check: http://localhost:${PORT}/health`);
 });
 
@@ -281,4 +261,4 @@ process.on('SIGINT', () => {
         }
         process.exit(0);
     });
-});
+}); 
